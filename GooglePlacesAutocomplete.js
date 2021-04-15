@@ -665,13 +665,17 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
   const _onBlur = (e) => {
     if (e && isNewFocusInAutocompleteResultList(e)) return;
 
-    if (!props.keepResultsAfterBlur) {
-      setListViewDisplayed(false);
+    if (!props.keepResultsAfterBlur && props.listViewDisplayed === 'auto') {
+        setListViewDisplayed(false);
     }
     inputRef?.current?.blur();
   };
 
-  const _onFocus = () => setListViewDisplayed(true);
+  const _onFocus = () => {
+    if (props.listViewDisplayed === 'auto') {
+      setListViewDisplayed(true);
+    }
+  }
 
   const _renderPoweredLogo = () => {
     if (!_shouldShowPoweredLogo()) {
@@ -847,7 +851,7 @@ GooglePlacesAutocomplete.propTypes = {
   keyboardShouldPersistTaps: PropTypes.oneOf(['never', 'always', 'handled']),
   listEmptyComponent: PropTypes.func,
   listUnderlayColor: PropTypes.string,
-  listViewDisplayed: PropTypes.oneOf(['auto', PropTypes.bool]),
+  listViewDisplayed: PropTypes.oneOfType([PropTypes.oneOf(['auto']), PropTypes.bool]),
   keepResultsAfterBlur: PropTypes.bool,
   minLength: PropTypes.number,
   nearbyPlacesAPI: PropTypes.string,
