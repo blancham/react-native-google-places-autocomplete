@@ -412,6 +412,7 @@ interface GooglePlacesAutocompleteProps {
   query: Query | Object;
   renderDescription?: (description: DescriptionRow) => string;
   renderHeaderComponent?: () => JSX.Element | React.ComponentType<{}>;
+  renderPoweredComponent?: () => JSX.Element | React.ComponentType<{}>;
   renderLeftButton?: () => JSX.Element | React.ComponentType<{}>;
   renderRightButton?: () => JSX.Element | React.ComponentType<{}>;
   renderRow?: (
@@ -432,6 +433,9 @@ export type GooglePlacesAutocompleteRef = {
   setAddressText(address: string): void;
   getAddressText(): string;
   getCurrentLocation(): void;
+  selectRow(
+    index: number,
+  ): { data: GooglePlaceData; details?: GooglePlaceDetail } | undefined;
 } & TextInput;
 
 export const GooglePlacesAutocomplete: React.ForwardRefExoticComponent<

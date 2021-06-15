@@ -143,8 +143,8 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
   }, []);
   useEffect(() => {
     // Update dataSource if props.predefinedPlaces changed
-    setDataSource(buildRowsFromResults([])) 
-  }, [props.predefinedPlaces])
+    setDataSource(buildRowsFromResults([]));
+  }, [props.predefinedPlaces]);
 
   useImperativeHandle(ref, () => ({
     setAddressText: _onChangeText,
@@ -154,6 +154,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     isFocused: () => inputRef.current.isFocused(),
     clear: () => inputRef.current.clear(),
     getCurrentLocation,
+    selectRow,
   }));
 
   const requestShouldUseWithCredentials = () =>
@@ -173,6 +174,31 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     } else {
       return true;
     }
+  };
+
+  const selectRow = async (index) => {
+    if (dataSource.length > 0 && index < dataSource.length) {
+      const rowData = dataSource[index];
+
+      const response = await fetch(
+        `${url}/place/details/json?` +
+          Qs.stringify({
+            key: props.query.key,
+            placeid: rowData.place_id,
+            language: props.query.language,
+            ...props.GooglePlacesDetailsQuery,
+          }),
+        {
+          method: 'GET',
+        },
+      ).then((repsonse) => repsonse.json());
+
+      setStateText(_renderDescription(rowData));
+
+      return { data: rowData, details: response.result };
+    }
+
+    return undefined;
   };
 
   const getCurrentLocation = () => {
@@ -528,7 +554,9 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debounceData = useMemo(() => debounce(_request, props.debounce), [props.query]);
+  const debounceData = useMemo(() => debounce(_request, props.debounce), [
+    props.query,
+  ]);
 
   const _onChangeText = (text) => {
     setStateText(text);
@@ -665,7 +693,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     if (e && isNewFocusInAutocompleteResultList(e)) return;
 
     if (!props.keepResultsAfterBlur && props.listViewDisplayed === 'auto') {
-        setListViewDisplayed(false);
+      setListViewDisplayed(false);
     }
     inputRef?.current?.blur();
   };
@@ -674,12 +702,14 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     if (props.listViewDisplayed === 'auto') {
       setListViewDisplayed(true);
     }
-  }
+  };
 
   const _renderPoweredLogo = () => {
     if (!_shouldShowPoweredLogo()) {
       return null;
     }
+
+    if (props.renderPoweredComponent) return props.renderPoweredComponent();
 
     return (
       <View
@@ -851,7 +881,10 @@ GooglePlacesAutocomplete.propTypes = {
   listEmptyComponent: PropTypes.func,
   listUnderlayColor: PropTypes.string,
   // Must write it this way: https://stackoverflow.com/a/54290946/7180620
-  listViewDisplayed: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf(['auto'])]),
+  listViewDisplayed: PropTypes.oneOfType([
+    PropTypes.bool,
+    PropTypes.oneOf(['auto']),
+  ]),
   keepResultsAfterBlur: PropTypes.bool,
   minLength: PropTypes.number,
   nearbyPlacesAPI: PropTypes.string,
@@ -867,6 +900,7 @@ GooglePlacesAutocomplete.propTypes = {
   query: PropTypes.object,
   renderDescription: PropTypes.func,
   renderHeaderComponent: PropTypes.func,
+  renderPoweredComponent: PropTypes.func,
   renderLeftButton: PropTypes.func,
   renderRightButton: PropTypes.func,
   renderRow: PropTypes.func,
