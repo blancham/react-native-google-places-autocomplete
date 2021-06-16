@@ -435,7 +435,10 @@ export type GooglePlacesAutocompleteRef = {
   getCurrentLocation(): void;
   selectRow(
     index: number,
-  ): { data: GooglePlaceData; details: GooglePlaceDetail | undefined } | undefined;
+  ): Promise<
+    | { data: GooglePlaceData; details: GooglePlaceDetail | undefined }
+    | undefined
+  >;
 } & TextInput;
 
 export const GooglePlacesAutocomplete: React.ForwardRefExoticComponent<
